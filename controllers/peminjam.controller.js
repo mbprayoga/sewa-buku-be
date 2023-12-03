@@ -108,7 +108,11 @@ async function editPeminjamPassword(req, res) {
 }
 
 function showBookAll(req,res){
-    models.Buku.findAll().then(result =>{
+    const ketersediaanFilter = req.query.ketersediaan;
+    const whereClause = ketersediaanFilter ? { ketersediaan: ketersediaanFilter } : {};
+    models.Buku.findAll({
+        where: whereClause
+    }).then(result =>{
         res.status(200).json({
             buku:result
         });

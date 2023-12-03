@@ -7,6 +7,35 @@ const moment = require('moment');
 const session = require('express-session');
 
 
+async function getUserData(req, res) {
+    try {
+      // Check if there is a user session
+      if (req.session.user) {
+        const { username, role } = req.session.user;
+  
+        // You may want to retrieve additional user data based on the role
+        let userData;
+  
+        if (role === 'peminjam') {
+          userData = await models.Peminjam.findOne({ where: { username } });
+        } else if (role === 'admin') {
+          userData = await models.Admin.findOne({ where: { username } });
+        }
+  
+        if (userData) {
+          res.json({ username, role, additionalData: userData });
+        } else {
+          res.status(404).json({ message: 'User data not found' });
+        }
+      } else {
+        res.status(401).json({ message: 'Unauthorized' });
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Internal Server Error' });
+    }
+  }
+
 async function login(req, res) {
     const { username, password } = req.body;
   
@@ -22,7 +51,7 @@ async function login(req, res) {
             username: peminjamResult.username,
             role: 'peminjam',
           };
-          res.json({ message: 'Login successful' });
+          res.json({ message: 'Login successful', role: 'user' });
         } else {
           res.status(401).json({ message: 'Bad Credentials' });
         }
@@ -38,7 +67,7 @@ async function login(req, res) {
               username: adminResult.username,
               role: 'admin',
             };
-            res.json({ message: 'Login successful' });
+            res.json({ message: 'Login successful', role: 'admin' });
           } else {
             res.status(401).json({ message: 'Bad Credentials' });
           }
@@ -196,9 +225,28 @@ function addAdmin(req, res,){
     })   
 }
 
+function showBookAll(req,res){
+    const ketersediaanFilter = req.query.ketersediaan;
+    const whereClause = ketersediaanFilter ? { ketersediaan: ketersediaanFilter } : {};
+    models.Buku.findAll({
+        where: whereClause
+    }).then(result =>{
+        res.status(200).json({
+            buku:result
+        });
+    }).catch(error =>{
+        res.status(500).json({
+            message: "Something went wrong",
+            error:error
+        });
+    });
+}
+
 module.exports = {
     addPeminjam:addPeminjam,
     addAdmin:addAdmin,
     login:login,
-    logout:logout
+    logout:logout,
+    getUserData:getUserData,
+    showBookAll:showBookAll
 }
