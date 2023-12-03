@@ -10,8 +10,9 @@ app.use(bodyParser.json());
 app.use(session({
     secret: 'your-secret-key', // Change this to a random secret key
     resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false }, // Change to true if using https
+    saveUninitialized: false,
+    cookie: { secure: false,
+      httpOnly: true }, // Change to true if using https
   }));
 
 const accountRoute = require('./routes/account');

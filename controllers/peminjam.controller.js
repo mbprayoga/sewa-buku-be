@@ -107,19 +107,37 @@ async function editPeminjamPassword(req, res) {
     }
 }
 
-function showBookAll(req,res){
+function showBookAll(req, res) {
     const ketersediaanFilter = req.query.ketersediaan;
-    const whereClause = ketersediaanFilter ? { ketersediaan: ketersediaanFilter } : {};
+    const judulFilter = req.query.judul;
+
+    let whereClause = {};
+
+    if (ketersediaanFilter === "true") {
+        whereClause.ketersediaan = true;
+    } else if (ketersediaanFilter === "false") {
+        whereClause.ketersediaan = false;
+    }
+
+    // Add judul filter if present
+    if (judulFilter) {
+        whereClause.judul = {
+            [Op.like]: `%${judulFilter}%` // Case-insensitive partial match
+        };
+    }
+
     models.Buku.findAll({
         where: whereClause
-    }).then(result =>{
+    })
+    .then(result => {
         res.status(200).json({
-            buku:result
+            buku: result
         });
-    }).catch(error =>{
+    })
+    .catch(error => {
         res.status(500).json({
             message: "Something went wrong",
-            error:error
+            error: error
         });
     });
 }
@@ -225,7 +243,11 @@ function showPeminjamanAll(req, res){
         whereClause.status_bayar = statusBayarFilter;
     }
     if (statusKembaliFilter !== undefined) {
-        whereClause.status_kembali = statusKembaliFilter;
+        if(statusKembaliFilter === "true"){
+            whereClause.status_kembali = true;
+        }else if(statusKembaliFilter === "false"){
+            whereClause.status_kembali = false;
+        }
     }
     if (dendaFilter !== undefined) {
         if (dendaFilter === 'true') {

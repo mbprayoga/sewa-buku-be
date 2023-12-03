@@ -87,7 +87,8 @@ function logout(req, res){
         if (err) {
           return res.status(500).json({ message: 'Error logging out' });
         }
-        res.json({ message: 'Logout successful' });
+        res.clearCookie('connect.sid'); // Clear the session cookie
+        res.status(200).json({ message: 'Logout successful' });
       });
 }
 
@@ -225,19 +226,37 @@ function addAdmin(req, res,){
     })   
 }
 
-function showBookAll(req,res){
+function showBookAll(req, res) {
     const ketersediaanFilter = req.query.ketersediaan;
-    const whereClause = ketersediaanFilter ? { ketersediaan: ketersediaanFilter } : {};
+    const judulFilter = req.query.judul;
+
+    let whereClause = {};
+
+    if (ketersediaanFilter === "true") {
+        whereClause.ketersediaan = true;
+    } else if (ketersediaanFilter === "false") {
+        whereClause.ketersediaan = false;
+    }
+
+    // Add judul filter if present
+    if (judulFilter) {
+        whereClause.judul = {
+            [Op.like]: `%${judulFilter}%` // Case-insensitive partial match
+        };
+    }
+
     models.Buku.findAll({
         where: whereClause
-    }).then(result =>{
+    })
+    .then(result => {
         res.status(200).json({
-            buku:result
+            buku: result
         });
-    }).catch(error =>{
+    })
+    .catch(error => {
         res.status(500).json({
             message: "Something went wrong",
-            error:error
+            error: error
         });
     });
 }

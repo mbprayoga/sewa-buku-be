@@ -23,7 +23,8 @@ router.patch("/buku/:id/image-up", imageUploader.upload.single('image'), (req, r
       adminController.editBookImage(req,res, uploadedFileUrl);
 });
 router.patch("/buku/:id/edit", adminController.editBook);
-router.delete("/buku/:id/edit", adminController.deleteBook);
+router.get("/buku/:id/edit", adminController.showBook);
+router.delete("/buku/:id/delete", adminController.deleteBook);
 router.get("/peminjaman", adminController.showPeminjamanAll);
 router.patch("/peminjaman/:id/kembali", adminController.kembaliPeminjaman);
 
